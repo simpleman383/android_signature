@@ -24,13 +24,12 @@ import java.util.Objects;
 public class SignatureUtils {
     public static String USER_LIST_FILE = "SIGNATURE_USER_LIST.txt";
 
-    static void WriteFile(String information, Context context)
+    static void WriteFile(String information, Context context, String filename)
     {
         FileOutputStream outputStream;
-//        BufferedWriter writer = new BufferedWriter()
 
         try {
-            outputStream = context.openFileOutput(USER_LIST_FILE, Context.MODE_APPEND);
+            outputStream = context.openFileOutput(filename, Context.MODE_APPEND);
             outputStream.write((information+"\n").getBytes()  );
             outputStream.close();
             Log.i("SUCCESS: ", "data was written");
@@ -67,18 +66,17 @@ public class SignatureUtils {
 
 
 
-    static void ReWriteFile(List<String> information, Context context)
+    static void ReWriteFile(List<String> information, Context context, String filename)
     {
         FileOutputStream outputStream;
-//        BufferedWriter writer = new BufferedWriter()
 
         try {
-            outputStream = context.openFileOutput(USER_LIST_FILE, Context.MODE_PRIVATE);
+            outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
             for (String line: information) {
                 outputStream.write((line + "\n").getBytes());
             }
             outputStream.close();
-            Log.i("SUCCESS: ", "data was written");
+            Log.i("SUCCESS: ", "data was rewritten");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,9 +85,8 @@ public class SignatureUtils {
 
 
 
-    static void deleteUser(String username, Context context){
+    static void deleteUserFromList(String username, Context context){
         List<String> userList = ReadFile(USER_LIST_FILE, context);
-
         List<String> newList = new ArrayList<>();
 
         for (String user : userList) {
@@ -98,7 +95,30 @@ public class SignatureUtils {
             }
         }
 
-        ReWriteFile(newList, context);
+        ReWriteFile(newList, context, USER_LIST_FILE);
 
+    }
+
+
+
+
+    static void createEmptyFile(Context context, String filename)
+    {
+        try {
+            FileOutputStream  outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void deleteFile(Context context, String filename)
+    {
+        File file = new File(context.getFilesDir() , filename);
+        boolean deleted = file.delete();
+        if (deleted)
+            Log.i("SUCCESS: ", "File "+filename+" was deleted");
+        else
+            Log.i("ERROR ", "File "+filename+" was not deleted");
     }
 }

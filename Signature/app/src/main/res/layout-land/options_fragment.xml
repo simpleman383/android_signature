@@ -15,34 +15,38 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:id="@+id/sign_button"
-        android:layout_alignTop="@+id/quit_button"/>
+        />
 
-    <Spinner
-        android:layout_width="match_parent"
+    <TextView
+        android:text="Create a new user:"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/spinner"
-        android:layout_weight="0.22"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@+id/delete_button"/>
+        android:layout_marginLeft="57dp"
+        android:layout_marginStart="57dp"
+        android:id="@+id/textView3"/>
 
     <Button
         android:text="Delete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/delete_button"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:layout_weight="0.08"/>
+        android:layout_weight="0.08"
+        android:layout_above="@+id/sign_button"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/new_user_name"
         android:layout_weight="0.14"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/textView3"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="16dp"/>
 
     <Button
         android:text="Create New"
@@ -52,5 +56,23 @@
         android:layout_below="@+id/new_user_name"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"/>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        android:layout_weight="0.22"
+        android:layout_above="@+id/delete_button"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
+
+    <TextView
+        android:text="Choose a user from this list:"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView4"
+        android:layout_centerVertical="true"
+        android:layout_alignLeft="@+id/textView3"
+        android:layout_alignStart="@+id/textView3"/>
 
 </RelativeLayout>

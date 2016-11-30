@@ -22,8 +22,8 @@ import java.util.List;
 
 public class CanvasView extends View {
 
-    private Canvas mCanvas;
-    private PointF mCurrentPoint; //for drawing
+    private Canvas mCanvas;     //for drawing
+    private PointF mCurrentPoint;
     private Paint mSignaturePaint;
     private Paint mBackgroundPaint;
     private List<PointF> mSignatureControlPoints = new ArrayList<>();
@@ -37,6 +37,9 @@ public class CanvasView extends View {
     private ArrayList<Long> TimePeriodOnTouch = new ArrayList<>(); //on touch time measure
     private long timeStart;
     private long periodOnTouch;
+
+    private ArrayList<Double> WritingVelocityProjectionsX = new ArrayList<>();
+    private ArrayList<Double> WritingVelocityProjectionsY = new ArrayList<>();
 
 
     public CanvasView(Context context)
@@ -52,7 +55,7 @@ public class CanvasView extends View {
         mBackgroundPaint = new Paint();
 
         mSignaturePaint.setColor(Color.BLACK);
-        mSignaturePaint.setStrokeWidth(8);
+        mSignaturePaint.setStrokeWidth(6);
         mBackgroundPaint.setColor(Color.WHITE);
 
         mTouchCounter = 0;
@@ -82,15 +85,26 @@ public class CanvasView extends View {
 
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
+            {
                 timeStart = System.currentTimeMillis();
+
                 action = "ACTION_DOWN";
+
                 mTouchCounter += 1;
+
                 mCurrentPoint = curPoint;
+
                 mSignatureControlPoints.add(mCurrentPoint);
-                if (mCurrentPoint != null) {invalidate();}
+
+                if (mCurrentPoint != null) {
+                    invalidate();
+                }
+
                 break;
+            }
 
             case MotionEvent.ACTION_UP:
+            {
                 periodOnTouch = System.currentTimeMillis() - timeStart;
                 timeStart = 0;
                 TimePeriodOnTouch.add(periodOnTouch);
@@ -99,24 +113,30 @@ public class CanvasView extends View {
                 mCurrentPoint = null;
                 Log.i("ON_TOUCH: ", String.valueOf(periodOnTouch));
                 break;
+            }
 
             case MotionEvent.ACTION_MOVE:
+            {
                 mCurrentPoint = curPoint;
+                //long curTime = System.currentTimeMillis();
+               // double velocityProjectionX = ( curPoint.x - mSignatureControlPoints.get(mSignatureControlPoints.size()-1).x )   ;
                 mSignatureControlPoints.add(mCurrentPoint);
 
-                if (mCurrentPoint != null)
-                {
+                if (mCurrentPoint != null) {
                     invalidate();
                 }
                 break;
+            }
 
             case MotionEvent.ACTION_CANCEL:
+            {
                 periodOnTouch = System.currentTimeMillis() - timeStart;
                 timeStart = 0;
                 TimePeriodOnTouch.add(periodOnTouch);
                 action = "ACTION_CANCEL";
                 mCurrentPoint = null;
                 break;
+            }
         }
 
 
@@ -151,7 +171,7 @@ public class CanvasView extends View {
         PointF prev = null;
 
         for (PointF p : mSignatureControlPoints) {
-            mCanvas.drawCircle(p.x, p.y, 4, mSignaturePaint);
+            mCanvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
             if (prev != null)
             {
                 mCanvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
@@ -165,15 +185,5 @@ public class CanvasView extends View {
 
     }
 
-    private Bitmap ConvertToBitmap(Canvas canvas, Paint signaturePaint, int width, int height)
-    {
-
-        Bitmap signatureBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
-
-        canvas.drawBitmap(signatureBitmap, 0, 0 , signaturePaint);
-
-        return signatureBitmap;
-
-    }
 
 }

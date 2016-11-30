@@ -15,12 +15,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.widget.Toast.LENGTH_SHORT;
 import static com.simpleman383.signature.SignatureUtils.USER_LIST_FILE;
+import static com.simpleman383.signature.SignatureUtils.createEmptyFile;
+import static com.simpleman383.signature.SignatureUtils.deleteFile;
 
 /**
  * Created by Alex on 28.11.2016.
@@ -50,6 +54,8 @@ public class OptionsFragment extends Fragment {
     }
 
 
+
+
     private void updateSpinner()
     {
         userList = SignatureUtils.ReadFile(USER_LIST_FILE, getContext());
@@ -76,10 +82,27 @@ public class OptionsFragment extends Fragment {
         mSign = (Button)v.findViewById(R.id.sign_button);
         mSign.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                currentUser = new User(currentUserName, getContext());
-                Intent i = DrawActivity.newIntent(getActivity(), currentUser);
-                startActivity(i);
+            public void onClick(View view)
+            {
+                if (mUserList.getSelectedItem() !=null)
+                {
+                    currentUserName = mUserList.getSelectedItem().toString();
+                }
+                else
+                {
+                    currentUserName = "";
+                }
+
+                if (!currentUserName.isEmpty())
+                {
+                    currentUser = new User(currentUserName, getContext());
+                    Intent i = DrawActivity.newIntent(getActivity(), currentUser);
+                    startActivity(i);
+                }
+                else
+                {
+                    Toast.makeText(getContext(),"Please, choose a user", LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -108,9 +131,15 @@ public class OptionsFragment extends Fragment {
 
                 if (!name.isEmpty() && !userList.contains(name))
                 {
-                    SignatureUtils.WriteFile(newUserName, getContext());
+                    SignatureUtils.WriteFile(newUserName, getContext(), USER_LIST_FILE);
+                    createEmptyFile(getContext(), newUserName + "_CORPUS.txt");
                     updateSpinner();
                 }
+                else
+                {
+                    Toast.makeText(getContext(),"Error, empty name or user already exists", LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -131,7 +160,7 @@ public class OptionsFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                currentUserName = "";
             }
         });
 
@@ -142,14 +171,19 @@ public class OptionsFragment extends Fragment {
         mDeleteUser = (Button)v.findViewById(R.id.delete_button);
         mDeleteUser.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
 
                 if (!userList.isEmpty())
                 {
-                    SignatureUtils.deleteUser(currentUserName, getContext());
+                    SignatureUtils.deleteUserFromList(currentUserName, getContext());
+                    SignatureUtils.deleteFile(getContext(), currentUserName+"_CORPUS.txt");
                     updateSpinner();
                 }
-
+                else
+                {
+                    Toast.makeText(getContext(),"Error, user list is empty", LENGTH_SHORT).show();
+                }
             }
         });
 

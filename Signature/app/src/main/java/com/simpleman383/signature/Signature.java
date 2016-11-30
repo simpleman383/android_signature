@@ -5,26 +5,4 @@ package com.simpleman383.signature;
  */
 
 public class Signature {
-    private Bitmap signatureBitmap;
-    private int touches;
-    private List <Long> timeOnTouch;
-
-
-    public Signature(Bitmap signatureBitmap, int touches, List<Long> timeOnTouch){
-        this.signatureBitmap = signatureBitmap;
-        this.touches = touches;
-        this.timeOnTouch = timeOnTouch;
-    }
-
-    public Bitmap getSignatureBitmap(){
-        return this.signatureBitmap;
-    }
-
-    public int getTouches(){
-        return this.touches;
-    }
-
-    public List <Long> getTimeOnTouch(){
-        return this.timeOnTouch;
-    }
 }
