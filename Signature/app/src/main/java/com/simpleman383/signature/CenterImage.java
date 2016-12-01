@@ -32,18 +32,22 @@ public class CenterImage {
     }
 
     public int getXLeftBorder(){
+        detectXLeftBorder();
         return xLeftBorder;
     }
 
     public int getXRightBorder(){
+        detectXRightBorder();
         return xRightBorder;
     }
 
     public int getYTopBorder(){
+        detectYTopBorder();
         return yTopBorder;
     }
 
     public int getYBottomBorder(){
+        detectYBottomBorder();
         return yBottomBorder;
     }
 
