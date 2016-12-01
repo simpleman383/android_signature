@@ -3,6 +3,8 @@ package com.simpleman383.signature;
 /**
  * Created by Alex on 29.11.2016.
  */
+import android.graphics.*;
+import java.util.*;
 
 public class Signature {
     private Bitmap signatureBitmap;
