@@ -2,6 +2,8 @@ package com.simpleman383.signature;
 
 import android.content.Context;
 import android.util.Log;
+import android.graphics.*;
+import java.util.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -21,7 +23,7 @@ public class User
 
     public User(String name, Context context){
         mUserName = name;
-        CORPUS_FILE = name + "_CORPUS";
+        CORPUS_FILE = name + "_CORPUS.txt";
         SampleCounter = countSampleAmount(context);
     }
 

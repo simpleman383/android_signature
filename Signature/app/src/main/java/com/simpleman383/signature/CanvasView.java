@@ -2,17 +2,22 @@ package com.simpleman383.signature;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +28,7 @@ import java.util.List;
 public class CanvasView extends View {
 
     private Canvas mCanvas;     //for drawing
+    private  Path mPath;
     private PointF mCurrentPoint;
     private Paint mSignaturePaint;
     private Paint mBackgroundPaint;
@@ -96,7 +102,8 @@ public class CanvasView extends View {
 
                 mSignatureControlPoints.add(mCurrentPoint);
 
-                if (mCurrentPoint != null) {
+                if (mCurrentPoint != null)
+                {
                     invalidate();
                 }
 
@@ -119,10 +126,11 @@ public class CanvasView extends View {
             {
                 mCurrentPoint = curPoint;
                 //long curTime = System.currentTimeMillis();
-               // double velocityProjectionX = ( curPoint.x - mSignatureControlPoints.get(mSignatureControlPoints.size()-1).x )   ;
+                // double velocityProjectionX = ( curPoint.x - mSignatureControlPoints.get(mSignatureControlPoints.size()-1).x )   ;
                 mSignatureControlPoints.add(mCurrentPoint);
 
-                if (mCurrentPoint != null) {
+                if (mCurrentPoint != null)
+                {
                     invalidate();
                 }
                 break;
@@ -157,33 +165,36 @@ public class CanvasView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         mSignature = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mSignature);
-    }
+        mCanvas.drawBitmap(mSignature, 0, 0, mSignaturePaint);
 
+    }
 
 
 
     @Override
     protected void onDraw(Canvas canvas)
     {
-
-
         mCanvas.drawPaint(mBackgroundPaint);
+        canvas.drawPaint(mBackgroundPaint);
         PointF prev = null;
 
         for (PointF p : mSignatureControlPoints) {
             mCanvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
+            canvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
             if (prev != null)
             {
                 mCanvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
+                canvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
             }
             prev = p;
             if (mSignatureActionUpPoints.contains(prev))
                 prev = null;
         }
-        canvas.drawBitmap(mSignature,0,0, mSignaturePaint);
-
-
+        //canvas.drawBitmap(mSignature,0,0, mSignaturePaint);
     }
+
+
+
 
 
 }

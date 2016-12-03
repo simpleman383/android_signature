@@ -38,6 +38,8 @@ public class DrawControlFragment extends Fragment {
     private Button mClear;
     private CanvasView mCanvasView;
 
+    private Signature signature;
+
     private User curUser;
     boolean NEWBYE_MODE;
     private int exampleRemain = 10;
@@ -86,30 +88,46 @@ public class DrawControlFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                if (NEWBYE_MODE)
+                signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch());
+
+                if (signature.getTouches() == 0)
                 {
-                    //getData
-                    //write data in User_Corpus_File and mark it true
-                    //SignatureUtils.WriteFile("tratata",getContext(), curUser.getCORPUS_FILE());
-
-                    exampleRemain--;
-                    if (exampleRemain == 0)
-                        NEWBYE_MODE = false;
-                    Toast.makeText(getContext(), String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
-                    if (exampleRemain == 0)
-                        Toast.makeText(getContext(), "Enough. Now write again", Toast.LENGTH_SHORT).show();
-                    ResetFragment();
+                    Toast.makeText(getContext(), "Please, write something...", Toast.LENGTH_SHORT).show();
                 }
-                else
-                {
-                    //getData
-                    //write data in User_Corpus_File
-                    //classify
+                else {
 
-                    //show a dialog window that asks whether the decision was correct
+                    if (NEWBYE_MODE)
+                    {
+                        String data = FormatSignatureParams(signature);//getData
+                        SignatureUtils.WriteFile(data + "," + curUser.getUserName() , getContext() , curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
+
+                        exampleRemain--;
+                        if (exampleRemain == 0)
+                            NEWBYE_MODE = false;
+
+                        if (exampleRemain == 0)
+                            Toast.makeText(getContext(), "Enough. Now write again", Toast.LENGTH_SHORT).show();
+                        else
+                        {
+                            Toast.makeText(getContext(), String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
+                        }
+
+                        ResetFragment();
+                    } else
+                    {
+                        String data = FormatSignatureParams(signature);
+                        //getData
+                        //write data in User_Corpus_File
+                        //classify
+
+                        //show a dialog window that asks whether the decision was correct
+                        FragmentManager manager = getFragmentManager();
+                        ResultFragment dialog = new ResultFragment();
+                        dialog.show(manager, "RESULT");
+
+                    }
+
                 }
-
-
             }
         });
 
@@ -150,35 +168,30 @@ public class DrawControlFragment extends Fragment {
     }
 
 
-    public void GetSignatureParams()
+    public String FormatSignatureParams(Signature sign)
     {
-        Bitmap signatureBitmap = mCanvasView.getBitmap();
-        int touches = mCanvasView.getTouchCounter();
-        List <Long> timeOnTouch = mCanvasView.getTimePeriodOnTouch();
 
-       String tt = "";
 
-        for (int x=0; x<signatureBitmap.getWidth(); x+=7)
+       String dataForTest = "";
+
+        for (int x=0; x < signature.getSignatureBitmap().getWidth(); x++)
         {
-            for (int y=0; y<signatureBitmap.getHeight(); y+=7) {
-                tt = tt + String.valueOf(signatureBitmap.getPixel(x, y)) + ", ";
+            for (int y=0; y < signature.getSignatureBitmap().getHeight(); y++)
+            {
+                int color = 0;
+
+                if (signature.getSignatureBitmap().getPixel(x, y) == -1)
+                    color = 1;
+
+                dataForTest = dataForTest + String.valueOf(color) + ",";
             }
         }
 
-        Log.i("DATA_SET: ", tt);
+        dataForTest = dataForTest + String.valueOf(signature.getTouches()) + "," + String.valueOf(signature.getMinTimeOnTouch()) + "," + String.valueOf(signature.getMaxTimeOnTouch()) + ","+ String.valueOf(signature.getAverageTimeOnTouch()) + "," + String.valueOf(signature.getTotalTimeOnTouch());
+        Log.i("DATA_SET: ", dataForTest);
+        return dataForTest;
        /// SignatureUtils.WriteFile(tt ,getContext());
-
-
     }
-
-
-
-
-
-
-
-
-
 
 
 
