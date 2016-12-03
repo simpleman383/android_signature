@@ -3,6 +3,7 @@ package com.simpleman383.signature;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.icu.text.LocaleDisplayNames;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.simpleman383.signature.DrawActivity.CURRENT_USER;
+import static com.simpleman383.signature.DrawActivity.*;
 
 /**
  * Created by Alex on 29.11.2016.
@@ -39,6 +40,9 @@ public class DrawControlFragment extends Fragment {
     private CanvasView mCanvasView;
 
     private Signature signature;
+
+
+    private Bitmap defaultBitmap;
 
     private User curUser;
     boolean NEWBYE_MODE;
@@ -74,6 +78,16 @@ public class DrawControlFragment extends Fragment {
 
         mCanvasView = (CanvasView)v.findViewById(R.id.canvas_view);
 
+
+
+
+
+
+
+
+
+
+
         mClear = (Button)v.findViewById(R.id.clear_button);
         mClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,6 +101,8 @@ public class DrawControlFragment extends Fragment {
         mDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                mCanvasView.CenterSignature();
 
                 signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch());
 
@@ -161,6 +177,7 @@ public class DrawControlFragment extends Fragment {
 
         Bundle args = new Bundle();
         args.putSerializable(CURRENT_USER, curUser.getUserName());
+        //args.putByteArray(BITMAP, defaultBitmap.);
         drawFragment.setArguments(args);
 
         manager.beginTransaction().replace(R.id.fragmentContainer, drawFragment).commit();

@@ -11,6 +11,7 @@ import java.util.EventListener;
 public class DrawActivity extends SingleFragmentActivity{
 
     public static final String CURRENT_USER="CURRENT_USER";
+    public static final String BITMAP="BITMAP";
 
     public static Intent newIntent(Context packageContext, User user)
     {

@@ -28,7 +28,6 @@ import java.util.List;
 public class CanvasView extends View {
 
     private Canvas mCanvas;     //for drawing
-    private  Path mPath;
     private PointF mCurrentPoint;
     private Paint mSignaturePaint;
     private Paint mBackgroundPaint;
@@ -36,7 +35,7 @@ public class CanvasView extends View {
     private List<PointF> mSignatureActionUpPoints = new ArrayList<>();
 
     private Bitmap mSignature;
-
+    private Bitmap centeredSignature = null;
 
     private int mTouchCounter;
 
@@ -64,6 +63,8 @@ public class CanvasView extends View {
         mSignaturePaint.setStrokeWidth(6);
         mBackgroundPaint.setColor(Color.WHITE);
 
+       // mDefaultBitmap =
+
         mTouchCounter = 0;
     }
 
@@ -79,7 +80,6 @@ public class CanvasView extends View {
     public ArrayList<Long> getTimePeriodOnTouch(){
         return TimePeriodOnTouch;
     }
-
 
 
 
@@ -174,26 +174,40 @@ public class CanvasView extends View {
     @Override
     protected void onDraw(Canvas canvas)
     {
-        mCanvas.drawPaint(mBackgroundPaint);
-        canvas.drawPaint(mBackgroundPaint);
-        PointF prev = null;
+        if (centeredSignature == null)
+        {
+            mCanvas.drawPaint(mBackgroundPaint);
+            canvas.drawPaint(mBackgroundPaint);
+            PointF prev = null;
 
-        for (PointF p : mSignatureControlPoints) {
-            mCanvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
-            canvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
-            if (prev != null)
+            for (PointF p : mSignatureControlPoints)
             {
-                mCanvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
-                canvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
+                mCanvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
+                canvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
+                if (prev != null) {
+                    mCanvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
+                    canvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
+                }
+                prev = p;
+                if (mSignatureActionUpPoints.contains(prev))
+                    prev = null;
             }
-            prev = p;
-            if (mSignatureActionUpPoints.contains(prev))
-                prev = null;
         }
-        //canvas.drawBitmap(mSignature,0,0, mSignaturePaint);
+        else
+        {
+            canvas.drawPaint(mBackgroundPaint);
+            canvas.drawBitmap(centeredSignature, this.getWidth()/2 - centeredSignature.getWidth()/2 ,this.getHeight()/2 - centeredSignature.getHeight()/2, mSignaturePaint);
+        }
     }
 
 
+
+    public void CenterSignature()
+    {
+        CenterImage object = new CenterImage(mSignature);
+        centeredSignature = object.center();
+        invalidate();
+    }
 
 
 
