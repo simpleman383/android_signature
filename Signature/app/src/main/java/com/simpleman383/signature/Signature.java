@@ -28,6 +28,7 @@ public class Signature
         this.signatureBitmap = Bitmap.createScaledBitmap(signatureBitmap, signatureBitmap.getWidth()/Compression ,signatureBitmap.getHeight()/Compression, false);
         this.touches = touches;
         this.timeOnTouch = timeOnTouch;
+        this.setTimeOnTouchValues();
 
     }
 
@@ -57,9 +58,9 @@ public class Signature
         return maxTimeOnTouch;
     }
 
-    private void setTimeOnTouchParams()
+    private void setTimeOnTouchValues()
     {
-        if  (timeOnTouch.isEmpty())
+        if  (timeOnTouch == null || timeOnTouch.isEmpty())
         {
             this.maxTimeOnTouch = 0;
             this.minTimeOnTouch = 0;

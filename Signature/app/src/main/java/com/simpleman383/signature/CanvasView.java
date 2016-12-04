@@ -60,7 +60,7 @@ public class CanvasView extends View {
         mBackgroundPaint = new Paint();
 
         mSignaturePaint.setColor(Color.BLACK);
-        mSignaturePaint.setStrokeWidth(6);
+        mSignaturePaint.setStrokeWidth(10);
         mBackgroundPaint.setColor(Color.WHITE);
 
        // mDefaultBitmap =
@@ -182,8 +182,8 @@ public class CanvasView extends View {
 
             for (PointF p : mSignatureControlPoints)
             {
-                mCanvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
-                canvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
+                mCanvas.drawCircle(p.x, p.y, 5, mSignaturePaint);
+                canvas.drawCircle(p.x, p.y, 5, mSignaturePaint);
                 if (prev != null) {
                     mCanvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
                     canvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
@@ -195,8 +195,14 @@ public class CanvasView extends View {
         }
         else
         {
+            mSignature = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+            mCanvas = new Canvas(mSignature);
+
             canvas.drawPaint(mBackgroundPaint);
+            mCanvas.drawPaint(mBackgroundPaint);
+
             canvas.drawBitmap(centeredSignature, this.getWidth()/2 - centeredSignature.getWidth()/2 ,this.getHeight()/2 - centeredSignature.getHeight()/2, mSignaturePaint);
+            mCanvas.drawBitmap(centeredSignature, this.getWidth()/2 - centeredSignature.getWidth()/2 ,this.getHeight()/2 - centeredSignature.getHeight()/2, mSignaturePaint);
         }
     }
 

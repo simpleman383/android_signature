@@ -3,23 +3,28 @@ package com.simpleman383.signature;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.icu.text.LocaleDisplayNames;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.NotificationCompatSideChannelService;
-import android.support.v4.graphics.BitmapCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
+
+import java.io.Console;
+import java.io.File;
 import java.util.List;
-import java.util.UUID;
+
+
+import libsvm.SelfOptimizingLinearLibSVM;
+import net.sf.javaml.classification.Classifier;
+import net.sf.javaml.core.Dataset;
+import net.sf.javaml.core.Instance;
+import net.sf.javaml.tools.data.FileHandler;
 
 import static com.simpleman383.signature.DrawActivity.*;
 
@@ -37,6 +42,7 @@ public class DrawControlFragment extends Fragment {
     private Button mOptions;
     private Button mDone;
     private Button mClear;
+    private ImageView mImage;
     private CanvasView mCanvasView;
 
     private Signature signature;
@@ -77,15 +83,8 @@ public class DrawControlFragment extends Fragment {
         });
 
         mCanvasView = (CanvasView)v.findViewById(R.id.canvas_view);
-
-
-
-
-
-
-
-
-
+        mImage = (ImageView)v.findViewById(R.id.imageView2);
+        //mImage.setVisibility(View.INVISIBLE);
 
 
         mClear = (Button)v.findViewById(R.id.clear_button);
@@ -103,44 +102,61 @@ public class DrawControlFragment extends Fragment {
             public void onClick(View view) {
 
                 mCanvasView.CenterSignature();
-
                 signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch());
 
                 if (signature.getTouches() == 0)
                 {
                     Toast.makeText(getContext(), "Please, write something...", Toast.LENGTH_SHORT).show();
                 }
-                else {
-
+                else
+                {
                     if (NEWBYE_MODE)
                     {
-                        String data = FormatSignatureParams(signature);//getData
-                        SignatureUtils.WriteFile(data + "," + curUser.getUserName() , getContext() , curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
+                       GetExamples();
 
-                        exampleRemain--;
-                        if (exampleRemain == 0)
-                            NEWBYE_MODE = false;
-
-                        if (exampleRemain == 0)
-                            Toast.makeText(getContext(), "Enough. Now write again", Toast.LENGTH_SHORT).show();
-                        else
-                        {
-                            Toast.makeText(getContext(), String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
-                        }
-
-                        ResetFragment();
                     } else
                     {
                         String data = FormatSignatureParams(signature);
-                        //getData
-                        //write data in User_Corpus_File
-                        //classify
+                        String decision="";
+
+                        try
+                        {
+                            File corpus = new File(getContext().getFilesDir() , curUser.getCORPUS_FILE());
+                            int size = signature.getSignatureBitmap().getWidth()*signature.getSignatureBitmap().getHeight()+5;
+
+                            Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
+
+                            Classifier svm = new SelfOptimizingLinearLibSVM();
+                            svm.buildClassifier(dataset);
+
+                            SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
+                            File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
+
+
+                            Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1  , ",");
+
+                            for (Instance inst : dataForClassification)
+                            {
+                                Object result = svm.classify(inst);
+                                decision = result.toString();
+                                Log.i("DECISION: ", decision);
+                            }
+
+                            SignatureUtils.deleteFile(getContext(), "temporary.txt");
+
+                        } catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+
+
 
                         //show a dialog window that asks whether the decision was correct
                         FragmentManager manager = getFragmentManager();
-                        ResultFragment dialog = new ResultFragment();
-                        dialog.show(manager, "RESULT");
+                        ResultFragment dialog = ResultFragment.newInstance(curUser.getUserName(), decision, data);
+                        dialog.show(manager, "RESULT") ;
 
+                        ResetFragment();
                     }
 
                 }
@@ -211,6 +227,39 @@ public class DrawControlFragment extends Fragment {
     }
 
 
+    private void GetExamples()
+    {
+        String data = FormatSignatureParams(signature);//getData
 
+
+        if (exampleRemain%2==0)
+        {
+            SignatureUtils.WriteFile(data + ",true", getContext(), curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
+        }
+        else
+        {
+            SignatureUtils.WriteFile(data + ",false", getContext(), curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
+        }
+
+        exampleRemain--;
+        if (exampleRemain == 0)
+            NEWBYE_MODE = false;
+
+        if (exampleRemain == 0)
+            Toast.makeText(getContext(), "Enough. Now write again", Toast.LENGTH_SHORT).show();
+        else
+        {
+            if (exampleRemain%2==0)
+            {
+                Toast.makeText(getContext(), "Now write true signature\n" + String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
+            }
+            else
+            {
+                Toast.makeText(getContext(), "Now write fake signature\n" + String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+        ResetFragment();
+    }
 
 }
