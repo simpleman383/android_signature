@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Signature
 {
-    private static final int Compression = 10;
+    private static final int Compression = 15;
 
     private Bitmap signatureBitmap;
     private int touches;

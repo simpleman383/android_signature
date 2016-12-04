@@ -84,7 +84,7 @@ public class DrawControlFragment extends Fragment {
 
         mCanvasView = (CanvasView)v.findViewById(R.id.canvas_view);
         mImage = (ImageView)v.findViewById(R.id.imageView2);
-        //mImage.setVisibility(View.INVISIBLE);
+        mImage.setVisibility(View.INVISIBLE);
 
 
         mClear = (Button)v.findViewById(R.id.clear_button);
