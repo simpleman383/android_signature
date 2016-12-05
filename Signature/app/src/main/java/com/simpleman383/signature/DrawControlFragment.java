@@ -22,6 +22,7 @@ import java.util.List;
 
 import libsvm.SelfOptimizingLinearLibSVM;
 import net.sf.javaml.classification.Classifier;
+import net.sf.javaml.classification.KNearestNeighbors;
 import net.sf.javaml.core.Dataset;
 import net.sf.javaml.core.Instance;
 import net.sf.javaml.tools.data.FileHandler;
@@ -91,6 +92,7 @@ public class DrawControlFragment extends Fragment {
         mClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.i("MAXXX ", String.valueOf(Double.MAX_VALUE));
                 ResetFragment();
             }
         });
@@ -102,7 +104,7 @@ public class DrawControlFragment extends Fragment {
             public void onClick(View view) {
 
                 mCanvasView.CenterSignature();
-                signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch());
+                signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch(), mCanvasView.getSignatureControlPoints(), mCanvasView.getSignatureActionUpPoints(), mCanvasView.getTimesOfGettingPoints());
 
                 if (signature.getTouches() == 0)
                 {
@@ -122,12 +124,14 @@ public class DrawControlFragment extends Fragment {
                         try
                         {
                             File corpus = new File(getContext().getFilesDir() , curUser.getCORPUS_FILE());
-                            int size = signature.getSignatureBitmap().getWidth()*signature.getSignatureBitmap().getHeight()+5;
+                            int size = signature.getSignatureBitmap().getWidth()*signature.getSignatureBitmap().getHeight()+11;
 
                             Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
 
-                            Classifier svm = new SelfOptimizingLinearLibSVM();
-                            svm.buildClassifier(dataset);
+                            //Classifier svm = new SelfOptimizingLinearLibSVM();
+                            //svm.buildClassifier(dataset);
+                            Classifier classifier = new KNearestNeighbors(5);
+                            classifier.buildClassifier(dataset);
 
                             SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
                             File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
@@ -135,9 +139,9 @@ public class DrawControlFragment extends Fragment {
 
                             Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1  , ",");
 
-                            for (Instance inst : dataForClassification)
+                           for (Instance inst : dataForClassification)
                             {
-                                Object result = svm.classify(inst);
+                                Object result = classifier.classify(inst);
                                 decision = result.toString();
                                 Log.i("DECISION: ", decision);
                             }
@@ -148,8 +152,6 @@ public class DrawControlFragment extends Fragment {
                         {
                             e.printStackTrace();
                         }
-
-
 
                         //show a dialog window that asks whether the decision was correct
                         FragmentManager manager = getFragmentManager();
@@ -211,19 +213,23 @@ public class DrawControlFragment extends Fragment {
         {
             for (int y=0; y < signature.getSignatureBitmap().getHeight(); y++)
             {
-                int color = 0;
+                int color = 1;
 
                 if (signature.getSignatureBitmap().getPixel(x, y) == -1)
-                    color = 1;
+                    color = 0;
 
                 dataForTest = dataForTest + String.valueOf(color) + ",";
             }
         }
 
         dataForTest = dataForTest + String.valueOf(signature.getTouches()) + "," + String.valueOf(signature.getMinTimeOnTouch()) + "," + String.valueOf(signature.getMaxTimeOnTouch()) + ","+ String.valueOf(signature.getAverageTimeOnTouch()) + "," + String.valueOf(signature.getTotalTimeOnTouch());
+
+        dataForTest = dataForTest + "," + String.valueOf(signature.getMaxSpeed())  + "," + String.valueOf(signature.getMinSpeedNotNull());
+        dataForTest = dataForTest + "," + String.valueOf(signature.getMaxVelocityProjectionX())  + "," + String.valueOf(signature.getMinVelocityProjectionX());
+        dataForTest = dataForTest + "," + String.valueOf(signature.getMaxVelocityProjectionY())  + "," + String.valueOf(signature.getMinVelocityProjectionY());
+
         Log.i("DATA_SET: ", dataForTest);
         return dataForTest;
-       /// SignatureUtils.WriteFile(tt ,getContext());
     }
 
 

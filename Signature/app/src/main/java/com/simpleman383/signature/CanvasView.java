@@ -43,6 +43,8 @@ public class CanvasView extends View {
     private long timeStart;
     private long periodOnTouch;
 
+    private ArrayList<Long> timesOfGettingPoints = new ArrayList<>();
+
     private ArrayList<Double> WritingVelocityProjectionsX = new ArrayList<>();
     private ArrayList<Double> WritingVelocityProjectionsY = new ArrayList<>();
 
@@ -63,8 +65,6 @@ public class CanvasView extends View {
         mSignaturePaint.setStrokeWidth(10);
         mBackgroundPaint.setColor(Color.WHITE);
 
-       // mDefaultBitmap =
-
         mTouchCounter = 0;
     }
 
@@ -81,7 +81,17 @@ public class CanvasView extends View {
         return TimePeriodOnTouch;
     }
 
+    public ArrayList<Long> getTimesOfGettingPoints(){
+        return timesOfGettingPoints;
+    }
 
+    public List<PointF> getSignatureControlPoints() {
+        return mSignatureControlPoints;
+    }
+
+    public List<PointF> getSignatureActionUpPoints() {
+        return mSignatureActionUpPoints;
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event)
@@ -101,6 +111,7 @@ public class CanvasView extends View {
                 mCurrentPoint = curPoint;
 
                 mSignatureControlPoints.add(mCurrentPoint);
+                timesOfGettingPoints.add(System.currentTimeMillis());
 
                 if (mCurrentPoint != null)
                 {
@@ -115,6 +126,7 @@ public class CanvasView extends View {
                 periodOnTouch = System.currentTimeMillis() - timeStart;
                 timeStart = 0;
                 TimePeriodOnTouch.add(periodOnTouch);
+
                 action = "ACTION_UP";
                 mSignatureActionUpPoints.add(curPoint);
                 mCurrentPoint = null;
@@ -125,9 +137,9 @@ public class CanvasView extends View {
             case MotionEvent.ACTION_MOVE:
             {
                 mCurrentPoint = curPoint;
-                //long curTime = System.currentTimeMillis();
-                // double velocityProjectionX = ( curPoint.x - mSignatureControlPoints.get(mSignatureControlPoints.size()-1).x )   ;
+
                 mSignatureControlPoints.add(mCurrentPoint);
+                timesOfGettingPoints.add(System.currentTimeMillis());
 
                 if (mCurrentPoint != null)
                 {
@@ -166,7 +178,6 @@ public class CanvasView extends View {
         mSignature = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mSignature);
         mCanvas.drawBitmap(mSignature, 0, 0, mSignaturePaint);
-
     }
 
 
@@ -211,10 +222,29 @@ public class CanvasView extends View {
     public void CenterSignature()
     {
         CenterImage object = new CenterImage(mSignature);
-        centeredSignature = object.center();
-        invalidate();
+        Bitmap cutSignature = object.center();
+        double k = (double)cutSignature.getHeight()/cutSignature.getWidth();
+
+        int width = this.getWidth();
+        long height = (int)Math.round(k*width);
+
+
+        if (height > this.getHeight())
+        {
+            height = this.getHeight();
+            width = (int)Math.round(height/k);
+
+            centeredSignature = Bitmap.createScaledBitmap(cutSignature, width, (int)height, false);
+            invalidate();
+        }
+        else
+        {
+            centeredSignature = Bitmap.createScaledBitmap(cutSignature, width, (int)height, false);
+            invalidate();
+        }
+
+
+
     }
-
-
 
 }
