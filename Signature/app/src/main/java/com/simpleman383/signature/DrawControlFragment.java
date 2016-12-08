@@ -15,8 +15,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
+import java.io.FileReader;
 import java.util.List;
 
 
@@ -130,21 +132,31 @@ public class DrawControlFragment extends Fragment {
 
                             //Classifier svm = new SelfOptimizingLinearLibSVM();
                             //svm.buildClassifier(dataset);
-                            Classifier classifier = new KNearestNeighbors(5);
-                            classifier.buildClassifier(dataset);
+                            //Classifier classifier = new KNearestNeighbors(5);
+                            //classifier.buildClassifier(dataset);
+                            RangeClassifier classifier = new RangeClassifier();
+                            classifier.loadData(corpus.getPath());
 
                             SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
                             File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
 
-
-                            Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1  , ",");
-
-                           for (Instance inst : dataForClassification)
-                            {
-                                Object result = classifier.classify(inst);
-                                decision = result.toString();
-                                Log.i("DECISION: ", decision);
+                            BufferedReader reader = new BufferedReader(new FileReader(forClassification.getPath()));
+                            String line = reader.readLine();
+                            String[] stringTemp = line.split(",");
+                            double[] doubleTemp = new double[stringTemp.length - 1];
+                            for (int iter = 0; iter < stringTemp.length - 1; iter++) {
+                                doubleTemp[iter] = Double.parseDouble(stringTemp[iter]);
                             }
+                            decision = classifier.classify(doubleTemp);
+                            Log.i("DECISION: ", decision);
+                            //Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1  , ",");
+
+                           //for (Instance inst : dataForClassification)
+                            //{
+                              //  Object result = classifier.classify(inst);
+                                //decision = result.toString();
+                                //Log.i("DECISION: ", decision);
+                           // }
 
                             SignatureUtils.deleteFile(getContext(), "temporary.txt");
 
