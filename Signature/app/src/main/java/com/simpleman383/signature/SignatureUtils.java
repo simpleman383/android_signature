@@ -1,6 +1,7 @@
 package com.simpleman383.signature;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
@@ -98,6 +99,7 @@ public class SignatureUtils {
         ReWriteFile(newList, context, USER_LIST_FILE);
 
     }
+
 
 
 
