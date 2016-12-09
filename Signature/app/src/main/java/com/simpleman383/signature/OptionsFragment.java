@@ -33,12 +33,14 @@ import static com.simpleman383.signature.SignatureUtils.deleteFile;
 public class OptionsFragment extends Fragment {
 
     private static final String CURRENT_USER = "CURRENT_USER";
+    private static final String SELECTED_CLASSIFIER = "SELECTED_CLASSIFIER";
 
     private Button mCreate;
     private EditText mNewUserName;
     private Button mSign;
     private Button mDeleteUser;
     private Spinner mUserList;
+    private Spinner mClassifiers;
 
     private ArrayAdapter<String> dataAdapter;
 
@@ -47,6 +49,7 @@ public class OptionsFragment extends Fragment {
     private String currentUserName = "";
     private String newUserName = "";
     private List<String> userList = new ArrayList<>();
+    private String selectedClassifier = "KNN-5";
 
 
     public static OptionsFragment newInstance() {
@@ -70,6 +73,7 @@ public class OptionsFragment extends Fragment {
     public void onSaveInstanceState(Bundle savedInstanceState){
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putString(CURRENT_USER, currentUserName);
+        savedInstanceState.putString(SELECTED_CLASSIFIER, selectedClassifier);
     }
 
 
@@ -96,7 +100,7 @@ public class OptionsFragment extends Fragment {
                 if (!currentUserName.isEmpty())
                 {
                     currentUser = new User(currentUserName, getContext());
-                    Intent i = DrawActivity.newIntent(getActivity(), currentUser);
+                    Intent i = DrawActivity.newIntent(getActivity(), currentUser, selectedClassifier);
                     startActivity(i);
                 }
                 else
@@ -108,6 +112,8 @@ public class OptionsFragment extends Fragment {
 
 
         mNewUserName = (EditText)v.findViewById(R.id.new_user_name);
+        mNewUserName.setFocusable(false);
+        mNewUserName.setFocusableInTouchMode(true);
         mNewUserName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence c, int start, int count, int after) {
@@ -184,6 +190,34 @@ public class OptionsFragment extends Fragment {
                 {
                     Toast.makeText(getContext(),"Error, user list is empty", LENGTH_SHORT).show();
                 }
+            }
+        });
+
+
+
+
+        mClassifiers = (Spinner)v.findViewById(R.id.spinner2);
+
+        if (savedInstanceState != null)
+        {
+            mClassifiers.setSelection(0);
+        }
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                getContext(), R.array.classifiers, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        mClassifiers.setAdapter(adapter);
+
+        mClassifiers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedClassifier = mClassifiers.getSelectedItem().toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                selectedClassifier = "KNN-5";
             }
         });
 

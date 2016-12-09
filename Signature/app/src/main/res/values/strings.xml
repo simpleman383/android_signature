@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Signature</string>
+    <string-array name="classifiers">
+        <item>KNN-5</item>
+        <item>Range Classifier</item>
+    </string-array>
 </resources>

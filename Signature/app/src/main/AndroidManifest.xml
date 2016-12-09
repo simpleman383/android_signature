@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".DrawActivity">
+        <activity android:name=".DrawActivity" android:screenOrientation="userLandscape">
         </activity>
 
     </application>

@@ -51,32 +51,35 @@ public class DrawControlFragment extends Fragment {
     private Signature signature;
 
 
-    private Bitmap defaultBitmap;
+    private String MODE="KNN-5";
 
     private User curUser;
     boolean NEWBYE_MODE;
     private int exampleRemain = 10;
+    private static final int AdditionalParamsNumb = 11;
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.draw_fragment, container, false);
 
 
         if (this.getArguments() != null)
         {
-            curUser = new User((String)this.getArguments().getSerializable(DrawActivity.CURRENT_USER), getContext());
-        }
-        else
+            curUser = new User((String) this.getArguments().getSerializable(DrawActivity.CURRENT_USER), getContext());
+            MODE = (String) this.getArguments().getSerializable(DrawActivity.SELECTED_CLASSIFIER);
+        } else
         {
             String name = (String) getActivity().getIntent().getSerializableExtra(DrawActivity.CURRENT_USER); //decide whether the user is new
-            curUser = new User(name,  getContext());
+            curUser = new User(name, getContext());
+            MODE = (String)getActivity().getIntent().getSerializableExtra(DrawActivity.SELECTED_CLASSIFIER);
         }
 
         NEWBYE_MODE = IsCurrentUserNew(curUser, getContext());
 
+        Toast.makeText(getContext(), "Hello, "+curUser.getUserName()+"!\nYou are using "+MODE+"", Toast.LENGTH_SHORT).show();
 
-        mOptions = (Button)v.findViewById(R.id.options_button);
+        mOptions = (Button) v.findViewById(R.id.options_button);
         mOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -85,22 +88,21 @@ public class DrawControlFragment extends Fragment {
             }
         });
 
-        mCanvasView = (CanvasView)v.findViewById(R.id.canvas_view);
-        mImage = (ImageView)v.findViewById(R.id.imageView2);
+        mCanvasView = (CanvasView) v.findViewById(R.id.canvas_view);
+        mImage = (ImageView) v.findViewById(R.id.imageView2);
         mImage.setVisibility(View.INVISIBLE);
 
 
-        mClear = (Button)v.findViewById(R.id.clear_button);
+        mClear = (Button) v.findViewById(R.id.clear_button);
         mClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i("MAXXX ", String.valueOf(Double.MAX_VALUE));
                 ResetFragment();
             }
         });
 
 
-        mDone = (Button)v.findViewById(R.id.done_button);
+        mDone = (Button) v.findViewById(R.id.done_button);
         mDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -108,67 +110,32 @@ public class DrawControlFragment extends Fragment {
                 mCanvasView.CenterSignature();
                 signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch(), mCanvasView.getSignatureControlPoints(), mCanvasView.getSignatureActionUpPoints(), mCanvasView.getTimesOfGettingPoints());
 
-                if (signature.getTouches() == 0)
-                {
+                if (signature.getTouches() == 0) {
                     Toast.makeText(getContext(), "Please, write something...", Toast.LENGTH_SHORT).show();
-                }
-                else
-                {
-                    if (NEWBYE_MODE)
-                    {
-                       GetExamples();
+                    ResetFragment();
+                } else {
+                    if (NEWBYE_MODE) {
+                        GetExamples();
 
-                    } else
-                    {
+                    } else {
+                        SignatureUtils.deleteFile(getContext(), "temporary.txt");
                         String data = FormatSignatureParams(signature);
-                        String decision="";
+                        String decision = "";
 
-                        try
+                        switch (MODE)
                         {
-                            File corpus = new File(getContext().getFilesDir() , curUser.getCORPUS_FILE());
-                            int size = signature.getSignatureBitmap().getWidth()*signature.getSignatureBitmap().getHeight()+11;
-
-                            Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
-
-                            //Classifier svm = new SelfOptimizingLinearLibSVM();
-                            //svm.buildClassifier(dataset);
-                            //Classifier classifier = new KNearestNeighbors(5);
-                            //classifier.buildClassifier(dataset);
-                            RangeClassifier classifier = new RangeClassifier();
-                            classifier.loadData(corpus.getPath());
-
-                            SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
-                            File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
-
-                            BufferedReader reader = new BufferedReader(new FileReader(forClassification.getPath()));
-                            String line = reader.readLine();
-                            String[] stringTemp = line.split(",");
-                            double[] doubleTemp = new double[stringTemp.length - 1];
-                            for (int iter = 0; iter < stringTemp.length - 1; iter++) {
-                                doubleTemp[iter] = Double.parseDouble(stringTemp[iter]);
-                            }
-                            decision = classifier.classify(doubleTemp);
-                            Log.i("DECISION: ", decision);
-                            //Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1  , ",");
-
-                           //for (Instance inst : dataForClassification)
-                            //{
-                              //  Object result = classifier.classify(inst);
-                                //decision = result.toString();
-                                //Log.i("DECISION: ", decision);
-                           // }
-
-                            SignatureUtils.deleteFile(getContext(), "temporary.txt");
-
-                        } catch (Exception e)
-                        {
-                            e.printStackTrace();
+                            case "KNN-5":
+                                decision = KNN_5_MODE(data, getContext());
+                                break;
+                            case "Range Classifier":
+                                decision = RangeClassifierMode(data, getContext());
+                                break;
                         }
 
                         //show a dialog window that asks whether the decision was correct
                         FragmentManager manager = getFragmentManager();
                         ResultFragment dialog = ResultFragment.newInstance(curUser.getUserName(), decision, data);
-                        dialog.show(manager, "RESULT") ;
+                        dialog.show(manager, "RESULT");
 
                         ResetFragment();
                     }
@@ -182,32 +149,26 @@ public class DrawControlFragment extends Fragment {
     }
 
 
-
-    private boolean IsCurrentUserNew(User curUser, Context context)
-    {
+    private boolean IsCurrentUserNew(User curUser, Context context) {
         List<String> existingCorpus = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), context);
 
-        if (existingCorpus.size() < 10)
-        {
+        if (existingCorpus.size() < 10) {
             exampleRemain = 10 - existingCorpus.size();
-            Toast.makeText(context, "Give an example of your signature "+String.valueOf(exampleRemain)+" times", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Give an example of your signature " + String.valueOf(exampleRemain) + " times", Toast.LENGTH_SHORT).show();
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 
 
-    private void ResetFragment()
-    {
+    private void ResetFragment() {
         FragmentManager manager = getActivity().getSupportFragmentManager();
         DrawControlFragment drawFragment = DrawControlFragment.newInstance();
 
         Bundle args = new Bundle();
         args.putSerializable(CURRENT_USER, curUser.getUserName());
-        //args.putByteArray(BITMAP, defaultBitmap.);
+        args.putSerializable(SELECTED_CLASSIFIER, MODE);
         drawFragment.setArguments(args);
 
         manager.beginTransaction().replace(R.id.fragmentContainer, drawFragment).commit();
@@ -217,28 +178,26 @@ public class DrawControlFragment extends Fragment {
 
     public String FormatSignatureParams(Signature sign)
     {
-
-
        String dataForTest = "";
 
-        for (int x=0; x < signature.getSignatureBitmap().getWidth(); x++)
+        for (int x=0; x < sign.getSignatureBitmap().getWidth(); x++)
         {
-            for (int y=0; y < signature.getSignatureBitmap().getHeight(); y++)
+            for (int y=0; y < sign.getSignatureBitmap().getHeight(); y++)
             {
                 int color = 1;
 
-                if (signature.getSignatureBitmap().getPixel(x, y) == -1)
+                if (sign.getSignatureBitmap().getPixel(x, y) == -1)
                     color = 0;
 
                 dataForTest = dataForTest + String.valueOf(color) + ",";
             }
         }
 
-        dataForTest = dataForTest + String.valueOf(signature.getTouches()) + "," + String.valueOf(signature.getMinTimeOnTouch()) + "," + String.valueOf(signature.getMaxTimeOnTouch()) + ","+ String.valueOf(signature.getAverageTimeOnTouch()) + "," + String.valueOf(signature.getTotalTimeOnTouch());
+        dataForTest = dataForTest + String.valueOf(sign.getTouches()) + "," + String.valueOf(sign.getMinTimeOnTouch()) + "," + String.valueOf(sign.getMaxTimeOnTouch()) + ","+ String.valueOf(sign.getAverageTimeOnTouch()) + "," + String.valueOf(sign.getTotalTimeOnTouch());
 
-        dataForTest = dataForTest + "," + String.valueOf(signature.getMaxSpeed())  + "," + String.valueOf(signature.getMinSpeedNotNull());
-        dataForTest = dataForTest + "," + String.valueOf(signature.getMaxVelocityProjectionX())  + "," + String.valueOf(signature.getMinVelocityProjectionX());
-        dataForTest = dataForTest + "," + String.valueOf(signature.getMaxVelocityProjectionY())  + "," + String.valueOf(signature.getMinVelocityProjectionY());
+        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxSpeed())  + "," + String.valueOf(sign.getMinSpeedNotNull());
+        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxVelocityProjectionX())  + "," + String.valueOf(sign.getMinVelocityProjectionX());
+        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxVelocityProjectionY())  + "," + String.valueOf(sign.getMinVelocityProjectionY());
 
         Log.i("DATA_SET: ", dataForTest);
         return dataForTest;
@@ -279,5 +238,78 @@ public class DrawControlFragment extends Fragment {
         }
         ResetFragment();
     }
+
+
+
+    private String KNN_5_MODE(String data, Context context)
+    {
+        String decision = "";
+        try
+        {
+            File corpus = new File(context.getFilesDir() , curUser.getCORPUS_FILE());
+            int size = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), context).get(0).split(",").length - 1; //get size of bitmap you created first
+
+
+            Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
+
+            Classifier classifier = new KNearestNeighbors(5);
+            classifier.buildClassifier(dataset);
+
+            SignatureUtils.WriteFile(data, context, "temporary.txt");
+            File forClassification = new File(context.getFilesDir() , "temporary.txt");
+
+            Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1 , ",");
+
+
+
+            for (Instance inst : dataForClassification)
+            {
+                Object result = classifier.classify(inst);
+                decision = result.toString();
+                Log.i("DECISION: ", decision);
+            }
+
+            SignatureUtils.deleteFile(context, "temporary.txt");
+            return decision;
+
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            SignatureUtils.deleteFile(context, "temporary.txt");
+            SignatureUtils.deleteFile(getContext(), "temporary.txt");
+            return "";
+        }
+    }
+
+
+    private String RangeClassifierMode(String data, Context context){
+         try
+         {
+             File corpus = new File(context.getFilesDir() , curUser.getCORPUS_FILE());
+
+             RangeClassifier classifier = new RangeClassifier();
+             classifier.loadData(corpus.getPath());
+
+             String line = data;
+             String[] stringTemp = line.split(",");
+             double[] doubleTemp = new double[stringTemp.length - 1];
+
+             for (int iter = 0; iter < stringTemp.length - 1; iter++) {
+                 doubleTemp[iter] = Double.parseDouble(stringTemp[iter]);
+             }
+
+             String decision = classifier.classify(doubleTemp);
+             Log.i("DECISION: ", decision);
+
+             return decision;
+
+         } catch (Exception e)
+         {
+             e.printStackTrace();
+             return "";
+         }
+
+    }
+
 
 }
