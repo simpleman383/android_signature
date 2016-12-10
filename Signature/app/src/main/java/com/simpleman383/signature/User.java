@@ -19,11 +19,13 @@ public class User
 {
     private String mUserName;
     private String CORPUS_FILE;
+    private String SIGNATURE_VECTOR_CHARS;
     private int SampleCounter;
 
     public User(String name, Context context){
         mUserName = name;
         CORPUS_FILE = name + "_CORPUS.txt";
+        SIGNATURE_VECTOR_CHARS = name + "_SIGNATURE_VECTOR_CHARS.txt";
         SampleCounter = countSampleAmount(context);
     }
 
@@ -69,7 +71,9 @@ public class User
         return data.size();
     }
 
-
+    public String getSIGNATURE_VECTOR_CHARS() {
+        return SIGNATURE_VECTOR_CHARS;
+    }
 }
 
 

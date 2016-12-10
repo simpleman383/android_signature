@@ -115,6 +115,14 @@ public class Signature {
 
     public double getYCoordOfCentroid() { return yCoordOfCentroid; }
 
+    public ArrayList<Double> getVectorLengthsOfPoints() {
+        return vectorLengthsOfPoints;
+    }
+
+    public ArrayList<Double> getAnglesOfPoints() {
+        return anglesOfPoints;
+    }
+
     private void setTimeOnTouchValues() {
         if (timeOnTouch == null || timeOnTouch.isEmpty()) {
             this.maxTimeOnTouch = 0;

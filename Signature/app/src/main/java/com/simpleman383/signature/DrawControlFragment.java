@@ -154,6 +154,13 @@ public class DrawControlFragment extends Fragment {
                             case "Range Classifier":
                                 decision = RangeClassifierMode(data, getContext());
                                 break;
+
+                            case "testing":
+                                SignatureVectorAnalyzer dd = new SignatureVectorAnalyzer(curUser, signature);
+                                dd.LearningPhase(signature, getContext());
+                                Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
+                                break;
+
                         }
 
                         //show a dialog window that asks whether the decision was correct
@@ -233,14 +240,14 @@ public class DrawControlFragment extends Fragment {
         String data = FormatSignatureParams(signature);//getData
 
 
-        if (exampleRemain%2==0)
-        {
+       // if (exampleRemain%2==0)
+       // {
             SignatureUtils.WriteFile(data + ",true", getContext(), curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
-        }
-        else
-        {
-            SignatureUtils.WriteFile(data + ",false", getContext(), curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
-        }
+       // }
+       // else
+        //{
+        //    SignatureUtils.WriteFile(data + ",false", getContext(), curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
+        //}
 
         exampleRemain--;
         if (exampleRemain == 0)
@@ -250,14 +257,14 @@ public class DrawControlFragment extends Fragment {
             Toast.makeText(getContext(), "Enough. Now write again", Toast.LENGTH_SHORT).show();
         else
         {
-            if (exampleRemain%2==0)
-            {
+            /*if (exampleRemain%2==0)
+            {*/
                 Toast.makeText(getContext(), "Now write true signature\n" + String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
-            }
+            /*}
             else
             {
                 Toast.makeText(getContext(), "Now write fake signature\n" + String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
-            }
+            }*/
 
         }
         ResetFragment();
