@@ -110,12 +110,17 @@ public class DrawControlFragment extends Fragment {
                 mCanvasView.CenterSignature();
                 signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch(), mCanvasView.getSignatureControlPoints(), mCanvasView.getSignatureActionUpPoints(), mCanvasView.getTimesOfGettingPoints());
 
+
                 if (signature.getTouches() == 0) {
                     Toast.makeText(getContext(), "Please, write something...", Toast.LENGTH_SHORT).show();
                     ResetFragment();
                 } else {
+                    SignatureVectorAnalyzer dd = new SignatureVectorAnalyzer(curUser, signature);
+
                     if (NEWBYE_MODE) {
+
                         GetExamples();
+                        dd.LearningPhase(signature, getContext());
 
                     } else {
                         SignatureUtils.deleteFile(getContext(), "temporary.txt");
@@ -156,9 +161,9 @@ public class DrawControlFragment extends Fragment {
                                 break;
 
                             case "testing":
-                                SignatureVectorAnalyzer dd = new SignatureVectorAnalyzer(curUser, signature);
-                                dd.LearningPhase(signature, getContext());
                                 Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
+                                if (dd.Compare(signature, getContext()) > 0.5) decision = "true";
+                                else decision="false";
                                 break;
 
                         }

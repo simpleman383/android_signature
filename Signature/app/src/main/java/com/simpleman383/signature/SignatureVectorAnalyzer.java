@@ -11,11 +11,8 @@ import java.util.List;
 
 public class SignatureVectorAnalyzer
 {
-    private final int LEARN_SIGNATURE_AMOUNT_LIMIT = 10;
-
-    private final double angleAccurance = 0.0872665;
-    private final double lengthAccurancePercentage = 0.1;
-    private final int limitPointsInTail = 100;
+    private final double angleAccurance = 4*0.0872665;
+    private final double lengthAccurancePercentage = 0.25;
 
     private User user;
     private Signature mSignature;
@@ -30,76 +27,41 @@ public class SignatureVectorAnalyzer
     public void LearningPhase(Signature signature, Context context)
     {
         List<String> allData = SignatureUtils.ReadFile(user.getSIGNATURE_VECTOR_CHARS(), context);
-
-        if (allData.isEmpty() || allData == null)
-        {
-            SignatureUtils.WriteFile(FormatParams(signature.getAnglesOfPoints()),context,user.getSIGNATURE_VECTOR_CHARS());
-            SignatureUtils.WriteFile(FormatParams(signature.getVectorLengthsOfPoints()),context,user.getSIGNATURE_VECTOR_CHARS());
-        } else {
-
-            String anglesString = allData.get(0);
-            String lengthsString = allData.get(1);
-            ArrayList<Double> averageAngles = ParseStringForDoubleList(anglesString);
-            ArrayList<Double> averageLengths = ParseStringForDoubleList(lengthsString);
-
-
-
-        }
+        SignatureUtils.WriteFile(FormatParams(signature.getAnglesOfPoints()),context,user.getSIGNATURE_VECTOR_CHARS());
+        SignatureUtils.WriteFile(FormatParams(signature.getVectorLengthsOfPoints()),context,user.getSIGNATURE_VECTOR_CHARS());
     }
 
 
-    public boolean Compare(Signature signature, Context context)
+    public double Compare(Signature signature, Context context)
     {
         List<String> allData = SignatureUtils.ReadFile(user.getSIGNATURE_VECTOR_CHARS(), context);
-        String anglesString = allData.get(0);
-        String lengthsString = allData.get(1);
-        ArrayList<Double> averageAngles = ParseStringForDoubleList(anglesString);
-        ArrayList<Double> averageLengths = ParseStringForDoubleList(lengthsString);
+        double max_matches = 0.0;
 
-        ArrayList<Double> signAngles = signature.getAnglesOfPoints();
-        ArrayList<Double> signLengths = signature.getVectorLengthsOfPoints();
-
-        int currentSign = 0;
-        int currentExampleSign = 0;
-
-        while (currentExampleSign < averageAngles.size() && currentSign < signAngles.size())
+        for (int i=0; i<allData.size()/2; i++)
         {
-            if (Math.abs(signAngles.get(currentSign) - averageAngles.get(currentExampleSign)) <= angleAccurance && Math.abs(signLengths.get(currentSign) - averageLengths.get(currentExampleSign)) <= lengthAccurancePercentage * averageLengths.get(currentExampleSign)) {
-                currentExampleSign++;
-                currentSign++;
-            } else {
+            String anglesString = allData.get(2*i);
+            String lengthsString = allData.get(2*i+1);
+            ArrayList<Double> averageAngles = ParseStringForDoubleList(anglesString);
+            ArrayList<Double> averageLengths = ParseStringForDoubleList(lengthsString);
+
+            ArrayList<Double> signAngles = signature.getAnglesOfPoints();
+            ArrayList<Double> signLengths = signature.getVectorLengthsOfPoints();
+
+            int currentSign = 0;
+            int currentExampleSign = 0;
+
+            while (currentExampleSign < averageAngles.size() && currentSign < signAngles.size())
+            {
+                while (Math.abs(signAngles.get(currentSign) - averageAngles.get(currentExampleSign)) <= angleAccurance && Math.abs(signLengths.get(currentSign) - averageLengths.get(currentExampleSign)) <= lengthAccurancePercentage * averageLengths.get(currentExampleSign)) {
+                    currentSign++;
+                }
                 currentExampleSign++;
             }
+
+            if (max_matches < (double)currentSign/averageAngles.size()) max_matches = (double)currentSign/averageAngles.size();
+
         }
-
-        if (currentExampleSign == averageAngles.size() && currentSign == signAngles.size())
-            return true;
-
-        if (currentExampleSign == averageAngles.size() && currentSign != signAngles.size())
-        {
-            if (Math.abs(currentSign - signAngles.size()) <= limitPointsInTail)
-                return true;
-            else
-                return false;
-        }
-
-
-        if (currentExampleSign == averageAngles.size() && currentSign != signAngles.size())
-        {
-            if (Math.abs(currentSign - signAngles.size()) <= limitPointsInTail)
-                return true;
-            else
-                return false;
-        }
-
-        if (currentExampleSign != averageAngles.size() && currentSign == signAngles.size()){
-            if (Math.abs(currentExampleSign - averageAngles.size()) <= limitPointsInTail)
-                return true;
-            else
-                return false;
-        }
-
-        return false;
+        return max_matches*2;
     }
 
 
