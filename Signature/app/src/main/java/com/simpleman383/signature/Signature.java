@@ -144,41 +144,44 @@ public class Signature {
 
     private void setCentroidCoordinates() {
         double sumX = 0, sumY = 0;
-        for (PointF point : mSignatureControlPoints) {
-            sumX += point.x;
-            sumY += point.y;
+        if (mSignatureControlPoints.size() != 0) {
+            for (PointF point : mSignatureControlPoints) {
+                sumX += point.x;
+                sumY += point.y;
+            }
+            this.xCoordOfCentroid = sumX / mSignatureControlPoints.size();
+            this.yCoordOfCentroid = sumY / mSignatureControlPoints.size();
         }
-        this.xCoordOfCentroid = sumX / mSignatureControlPoints.size();
-        this.yCoordOfCentroid = sumY / mSignatureControlPoints.size();
     }
 
     private void setAnglesAndVectorLengthsOfPoints(){
         this.anglesOfPoints = new ArrayList<>();
         this.vectorLengthsOfPoints = new ArrayList<>();
         double minX, maxX, minY, maxY, dXj, dYj, tetta = 0, vectorLength = 0;
+        if (mSignatureControlPoints.size() != 0) {
+            minX = mSignatureControlPoints.get(0).x;
+            minY = mSignatureControlPoints.get(0).y;
+            maxX = minX;
+            maxY = minY;
 
-        minX = mSignatureControlPoints.get(0).x;
-        minY = mSignatureControlPoints.get(0).y;
-        maxX = minX;
-        maxY = minY;
+            for (PointF point : mSignatureControlPoints) {
+                if (point.x < minX) minX = point.x;
+                if (point.y < minY) minY = point.y;
+                if (point.x > maxX) maxX = point.x;
+                if (point.y > maxY) maxY = point.y;
+            }
 
-        for (PointF point : mSignatureControlPoints){
-            if (point.x < minX) minX = point.x;
-            if (point.y < minY) minY = point.y;
-            if (point.x > maxX) maxX = point.x;
-            if (point.y > maxY) maxY = point.y;
-        }
-
-        for (PointF point : mSignatureControlPoints){
-            dXj = (point.x - xCoordOfCentroid) / (maxX - minX);
-            dYj = (point.y - yCoordOfCentroid) / (maxY - minY);
-            if (dXj > 0) tetta = Math.atan(dYj / dXj);
-            else if (dXj == 0) tetta = Math.signum(dYj) * Math.PI / 2;
-            else if ((dXj < 0) && (dYj >= 0)) tetta = Math.atan(dYj / dXj) + Math.PI;
-            else if ((dXj < 0) && (dYj < 0)) tetta = Math.atan(dYj / dXj) - Math.PI;
-            vectorLength = Math.sqrt(dXj * dXj + dYj * dYj);
-            this.anglesOfPoints.add(tetta);
-            this.vectorLengthsOfPoints.add(vectorLength);
+            for (PointF point : mSignatureControlPoints) {
+                dXj = (point.x - xCoordOfCentroid) / (maxX - minX);
+                dYj = (point.y - yCoordOfCentroid) / (maxY - minY);
+                if (dXj > 0) tetta = Math.atan(dYj / dXj);
+                else if (dXj == 0) tetta = Math.signum(dYj) * Math.PI / 2;
+                else if ((dXj < 0) && (dYj >= 0)) tetta = Math.atan(dYj / dXj) + Math.PI;
+                else if ((dXj < 0) && (dYj < 0)) tetta = Math.atan(dYj / dXj) - Math.PI;
+                vectorLength = Math.sqrt(dXj * dXj + dYj * dYj);
+                this.anglesOfPoints.add(tetta);
+                this.vectorLengthsOfPoints.add(vectorLength);
+            }
         }
 
     }
