@@ -252,7 +252,7 @@ public class Signature {
                 maxVelocityProjectionX = velocity;
 
             if (velocity < minVelocityProjectionX)
-                maxVelocityProjectionX = velocity;
+                minVelocityProjectionX = velocity;
         }
 
 
@@ -261,7 +261,7 @@ public class Signature {
                 maxVelocityProjectionY = velocity;
 
             if (velocity < minVelocityProjectionY)
-                maxVelocityProjectionY = velocity;
+                minVelocityProjectionY = velocity;
         }
 
 

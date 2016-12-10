@@ -77,7 +77,7 @@ public class DrawControlFragment extends Fragment {
 
         NEWBYE_MODE = IsCurrentUserNew(curUser, getContext());
 
-        Toast.makeText(getContext(), "Hello, "+curUser.getUserName()+"!\nYou are using "+MODE+"", Toast.LENGTH_SHORT).show();
+
 
         mOptions = (Button) v.findViewById(R.id.options_button);
         mOptions.setOnClickListener(new View.OnClickListener() {
@@ -125,8 +125,32 @@ public class DrawControlFragment extends Fragment {
                         switch (MODE)
                         {
                             case "KNN-5":
-                                decision = KNN_5_MODE(data, getContext());
-                                break;
+                                try
+                                {
+                                    File corpus = new File(getContext().getFilesDir() , curUser.getCORPUS_FILE());
+                                    int size = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), getContext()).get(0).split(",").length - 1;
+                                    Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
+
+                                    Classifier classifier = new KNearestNeighbors(5);
+                                    classifier.buildClassifier(dataset);
+
+                                    SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
+                                    File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
+                                    Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1 , ",");
+                                    for (Instance inst : dataForClassification)
+                                    {
+                                        Object result = classifier.classify(inst);
+                                        decision = result.toString();
+                                        Log.i("DECISION: ", decision);
+                                    }
+                                    SignatureUtils.deleteFile(getContext(), "temporary.txt");
+                                    break;
+                                } catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                    SignatureUtils.deleteFile(getContext(), "temporary.txt");
+                                }
+
                             case "Range Classifier":
                                 decision = RangeClassifierMode(data, getContext());
                                 break;
@@ -246,36 +270,28 @@ public class DrawControlFragment extends Fragment {
         String decision = "";
         try
         {
-            File corpus = new File(context.getFilesDir() , curUser.getCORPUS_FILE());
-            int size = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), context).get(0).split(",").length - 1; //get size of bitmap you created first
-
-
+            File corpus = new File(getContext().getFilesDir() , curUser.getCORPUS_FILE());
+            int size = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), getContext()).get(0).split(",").length - 1;
             Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
 
             Classifier classifier = new KNearestNeighbors(5);
             classifier.buildClassifier(dataset);
 
-            SignatureUtils.WriteFile(data, context, "temporary.txt");
-            File forClassification = new File(context.getFilesDir() , "temporary.txt");
-
+            SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
+            File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
             Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1 , ",");
-
-
-
             for (Instance inst : dataForClassification)
             {
                 Object result = classifier.classify(inst);
                 decision = result.toString();
                 Log.i("DECISION: ", decision);
             }
-
-            SignatureUtils.deleteFile(context, "temporary.txt");
+            SignatureUtils.deleteFile(getContext(), "temporary.txt");
             return decision;
 
         } catch (Exception e)
         {
             e.printStackTrace();
-            SignatureUtils.deleteFile(context, "temporary.txt");
             SignatureUtils.deleteFile(getContext(), "temporary.txt");
             return "";
         }

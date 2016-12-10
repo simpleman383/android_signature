@@ -62,7 +62,7 @@ public class CanvasView extends View {
         mBackgroundPaint = new Paint();
 
         mSignaturePaint.setColor(Color.BLACK);
-        mSignaturePaint.setStrokeWidth(10);
+        mSignaturePaint.setStrokeWidth(6);
         mBackgroundPaint.setColor(Color.WHITE);
 
         mTouchCounter = 0;
@@ -193,8 +193,8 @@ public class CanvasView extends View {
 
             for (PointF p : mSignatureControlPoints)
             {
-                mCanvas.drawCircle(p.x, p.y, 5, mSignaturePaint);
-                canvas.drawCircle(p.x, p.y, 5, mSignaturePaint);
+                mCanvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
+                canvas.drawCircle(p.x, p.y, 3, mSignaturePaint);
                 if (prev != null) {
                     mCanvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
                     canvas.drawLine(prev.x, prev.y, p.x, p.y, mSignaturePaint);
