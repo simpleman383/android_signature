@@ -50,15 +50,15 @@ public class SignatureVectorAnalyzer {
                     while (Math.abs(signAngles.get(currentSign) - averageAngles.get(currentExampleSign)) <= angleAccurance && Math.abs(signLengths.get(currentSign) - averageLengths.get(currentExampleSign)) <= lengthAccurancePercentage * averageLengths.get(currentExampleSign) && currentSign < averageAngles.size()) {
                         {
                             currentSign++;
-                            if (currentSign >= averageAngles.size())
+                            if (currentSign >= signAngles.size())
                                 break;
                         }
                 }
                 currentExampleSign++;
             }
 
-            if (max_matches < (double) currentSign / averageAngles.size())
-                max_matches = (double) currentSign / averageAngles.size();
+            if (max_matches < (double) currentSign / signAngles.size())
+                max_matches = (double) currentSign / signAngles.size();
 
         }
         return max_matches * 1.5;
