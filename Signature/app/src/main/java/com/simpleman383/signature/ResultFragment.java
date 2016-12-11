@@ -46,7 +46,7 @@ public class ResultFragment extends DialogFragment
         data = (String) getArguments().getString(DATA);
 
         if (result.isEmpty())
-            result = "Ашыпка";
+            result = "false";
 
         if (result.equals("true"))
             oppositeResult = "false";

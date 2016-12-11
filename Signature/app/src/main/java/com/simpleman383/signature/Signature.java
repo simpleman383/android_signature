@@ -56,10 +56,15 @@ public class Signature {
         this.mSignatureActionUpPoints = mSignatureActionUpPoints;
         this.mSignatureControlPoints = mSignatureControlPoints;
         this.timesOfGettingPoints = timesOfGettingPoints;
-        this.setCentroidCoordinates();
-        this.setAnglesAndVectorLengthsOfPoints();
         this.setTimeOnTouchValues();
         this.setSpeedCharValues();
+
+        this.addMoreControlPoints();//делает векторное сравнение стабильней, увеличивая число контрольных точек в 4 раза.
+        this.addMoreControlPoints();//если будет падать, то удалить 2 строчки:)
+
+        this.setCentroidCoordinates();
+        this.setAnglesAndVectorLengthsOfPoints();
+
     }
 
 
@@ -280,6 +285,27 @@ public class Signature {
 
 
         return;
+    }
+
+
+    private void addMoreControlPoints()
+    {
+        List<PointF> extendedControlPoints = new ArrayList<>();
+
+        PointF prev = null;
+        for (PointF point: this.mSignatureControlPoints) {
+            if (prev != null){
+                if (!mSignatureActionUpPoints.contains(prev))
+                {
+                    PointF p = new PointF((point.x+prev.x)/2, (point.y+prev.y)/2);
+                    extendedControlPoints.add(p);
+                }
+            }
+            extendedControlPoints.add(point);
+            prev = point;
+        }
+
+        this.mSignatureControlPoints = extendedControlPoints;
     }
 
 }

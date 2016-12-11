@@ -57,7 +57,7 @@ public class DrawControlFragment extends Fragment {
     private User curUser;
     boolean NEWBYE_MODE;
     private int exampleRemain = 10;
-    private static final int AdditionalParamsNumb = 11;
+    private static final int exampleOfSignatureNeededMin = 10;
 
 
     @Override
@@ -161,11 +161,11 @@ public class DrawControlFragment extends Fragment {
                                 decision = RangeClassifierMode(data, getContext());
                                 break;
 
-                            case "testing":
-                                //Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
+                            case "Shoomba-Boomba!":
+                                Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
                                 double accuracy = dd.Compare(signature, getContext());
                                 if (accuracy > 1) accuracy = 1;
-                                data = FormatSignatureParamsWithoutBitmap(signature);
+                                String dataNoBitmap = FormatSignatureParamsWithoutBitmap(signature);
                                 ShoombaBoomba sc = new ShoombaBoomba();
                                 try {
                                     sc.loadData(new File(getContext().getFilesDir(), curUser.getCORPUS_FILE()).getPath());
@@ -173,13 +173,13 @@ public class DrawControlFragment extends Fragment {
                                 catch (IOException e) {
                                     Log.i("ERROR", "Ошибка при загрузке данных");
                                 }
-                                boolean parametersAccuracy = sc.classify(data);
-                                if ((accuracy > 0.4) & parametersAccuracy){
+                                boolean parametersAccuracy = sc.classify(dataNoBitmap);
+                                if ((accuracy > 0.60) & parametersAccuracy){
                                     decision = "true";
                                 }
                                 else decision = "false";
 
-                                //if (dd.Compare(signature, getContext()) > 0.5) decision = "true";
+                                //if (dd.Compare(signature, getContext()) > 0.75) decision = "true";
                                 //else decision="false";
                                 break;
 
@@ -205,8 +205,8 @@ public class DrawControlFragment extends Fragment {
     private boolean IsCurrentUserNew(User curUser, Context context) {
         List<String> existingCorpus = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), context);
 
-        if (existingCorpus.size() < 10) {
-            exampleRemain = 10 - existingCorpus.size();
+        if (existingCorpus.size() < exampleOfSignatureNeededMin) {
+            exampleRemain = exampleOfSignatureNeededMin - existingCorpus.size();
             Toast.makeText(context, "Give an example of your signature " + String.valueOf(exampleRemain) + " times", Toast.LENGTH_SHORT).show();
             return true;
         } else {
