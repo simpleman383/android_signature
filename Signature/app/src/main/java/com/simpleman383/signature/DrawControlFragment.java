@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -161,9 +162,25 @@ public class DrawControlFragment extends Fragment {
                                 break;
 
                             case "testing":
-                                Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
-                                if (dd.Compare(signature, getContext()) > 0.5) decision = "true";
-                                else decision="false";
+                                //Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
+                                double accuracy = dd.Compare(signature, getContext());
+                                if (accuracy > 1) accuracy = 1;
+                                data = FormatSignatureParamsWithoutBitmap(signature);
+                                ShoombaBoomba sc = new ShoombaBoomba();
+                                try {
+                                    sc.loadData(new File(getContext().getFilesDir(), curUser.getCORPUS_FILE()).getPath());
+                                }
+                                catch (IOException e) {
+                                    Log.i("ERROR", "Ошибка при загрузке данных");
+                                }
+                                boolean parametersAccuracy = sc.classify(data);
+                                if ((accuracy > 0.4) & parametersAccuracy){
+                                    decision = "true";
+                                }
+                                else decision = "false";
+
+                                //if (dd.Compare(signature, getContext()) > 0.5) decision = "true";
+                                //else decision="false";
                                 break;
 
                         }
@@ -229,6 +246,18 @@ public class DrawControlFragment extends Fragment {
             }
         }
 
+        dataForTest = dataForTest + String.valueOf(sign.getTouches()) + "," + String.valueOf(sign.getMinTimeOnTouch()) + "," + String.valueOf(sign.getMaxTimeOnTouch()) + ","+ String.valueOf(sign.getAverageTimeOnTouch()) + "," + String.valueOf(sign.getTotalTimeOnTouch());
+
+        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxSpeed())  + "," + String.valueOf(sign.getMinSpeedNotNull());
+        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxVelocityProjectionX())  + "," + String.valueOf(sign.getMinVelocityProjectionX());
+        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxVelocityProjectionY())  + "," + String.valueOf(sign.getMinVelocityProjectionY());
+
+        Log.i("DATA_SET: ", dataForTest);
+        return dataForTest;
+    }
+
+    public String FormatSignatureParamsWithoutBitmap (Signature sign){
+        String dataForTest = "";
         dataForTest = dataForTest + String.valueOf(sign.getTouches()) + "," + String.valueOf(sign.getMinTimeOnTouch()) + "," + String.valueOf(sign.getMaxTimeOnTouch()) + ","+ String.valueOf(sign.getAverageTimeOnTouch()) + "," + String.valueOf(sign.getTotalTimeOnTouch());
 
         dataForTest = dataForTest + "," + String.valueOf(sign.getMaxSpeed())  + "," + String.valueOf(sign.getMinSpeedNotNull());

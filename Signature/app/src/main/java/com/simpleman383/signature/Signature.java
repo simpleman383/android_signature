@@ -111,9 +111,14 @@ public class Signature {
         return minVelocityProjectionY;
     }
 
-    public double getXCoordOfCentroid() { return xCoordOfCentroid; }
 
-    public double getYCoordOfCentroid() { return yCoordOfCentroid; }
+    public double getXCoordOfCentroid() {
+        return xCoordOfCentroid;
+    }
+
+    public double getYCoordOfCentroid() {
+        return yCoordOfCentroid;
+    }
 
     public ArrayList<Double> getVectorLengthsOfPoints() {
         return vectorLengthsOfPoints;
@@ -122,6 +127,7 @@ public class Signature {
     public ArrayList<Double> getAnglesOfPoints() {
         return anglesOfPoints;
     }
+
 
     private void setTimeOnTouchValues() {
         if (timeOnTouch == null || timeOnTouch.isEmpty()) {
@@ -162,7 +168,7 @@ public class Signature {
         }
     }
 
-    private void setAnglesAndVectorLengthsOfPoints(){
+    private void setAnglesAndVectorLengthsOfPoints() {
         this.anglesOfPoints = new ArrayList<>();
         this.vectorLengthsOfPoints = new ArrayList<>();
         double minX, maxX, minY, maxY, dXj, dYj, tetta = 0, vectorLength = 0;
