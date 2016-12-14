@@ -50,6 +50,7 @@ public class DrawControlFragment extends Fragment {
     private CanvasView mCanvasView;
 
     private Signature signature;
+    private SignatureVectorAnalyzer analyzer;
 
 
     private String MODE="KNN-5";
@@ -110,23 +111,26 @@ public class DrawControlFragment extends Fragment {
 
                 mCanvasView.CenterSignature();
                 signature = new Signature(mCanvasView.getBitmap(), mCanvasView.getTouchCounter(), mCanvasView.getTimePeriodOnTouch(), mCanvasView.getSignatureControlPoints(), mCanvasView.getSignatureActionUpPoints(), mCanvasView.getTimesOfGettingPoints());
-
+                analyzer = new SignatureVectorAnalyzer(curUser, signature);
 
                 if (signature.getTouches() == 0) {
                     Toast.makeText(getContext(), "Please, write something...", Toast.LENGTH_SHORT).show();
                     ResetFragment();
                 } else {
-                    SignatureVectorAnalyzer dd = new SignatureVectorAnalyzer(curUser, signature);
 
-                    if (NEWBYE_MODE) {
+                    //SignatureVectorAnalyzer dd = new SignatureVectorAnalyzer(curUser, signature);
 
+                    if (NEWBYE_MODE)
+                    {
                         GetExamples();
-                        dd.LearningPhase(signature, getContext());
+                        analyzer.LearningPhase(signature, getContext());
 
                     } else {
                         SignatureUtils.deleteFile(getContext(), "temporary.txt");
                         String data = FormatSignatureParams(signature);
                         String decision = "";
+
+                        FourLayerPerceptronNetwork network = new FourLayerPerceptronNetwork(curUser, getContext());
 
                         switch (MODE)
                         {
@@ -155,39 +159,60 @@ public class DrawControlFragment extends Fragment {
                                 {
                                     e.printStackTrace();
                                     SignatureUtils.deleteFile(getContext(), "temporary.txt");
+                                    break;
                                 }
 
                             case "Range Classifier":
-                                decision = RangeClassifierMode(data, getContext());
+                                try
+                                {
+                                    File corpus = new File(getContext().getFilesDir(), curUser.getCORPUS_FILE());
+
+                                    RangeClassifier classifier = new RangeClassifier();
+                                    classifier.loadData(corpus.getPath());
+
+                                    String line = data;
+                                    String[] stringTemp = line.split(",");
+                                    double[] doubleTemp = new double[stringTemp.length];
+
+                                    for (int iter = 0; iter < stringTemp.length; iter++) {
+                                        doubleTemp[iter] = Double.parseDouble(stringTemp[iter]);
+                                    }
+
+                                    decision = classifier.classify(doubleTemp);
+                                    Log.i("DECISION: ", decision);
+
+
+                                    Toast.makeText( getContext(), String.valueOf(analyzer.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
+                                    double accuracy = analyzer.Compare(signature, getContext());
+                                    if (accuracy > 1) accuracy = 1;
+
+                                    if ((accuracy > 0.66) && decision.equals("true")){
+                                        decision = "true";
+                                    }
+                                    else decision = "false";
+
+
+                                } catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                    break;
+                                }
                                 break;
 
-                            case "Shoomba-Boomba!":
-                                Toast.makeText( getContext(), String.valueOf(dd.Compare(signature, getContext())), Toast.LENGTH_SHORT).show();
-                                double accuracy = dd.Compare(signature, getContext());
-                                if (accuracy > 1) accuracy = 1;
-                                String dataNoBitmap = FormatSignatureParamsWithoutBitmap(signature);
-                                ShoombaBoomba sc = new ShoombaBoomba();
-                                try {
-                                    sc.loadData(new File(getContext().getFilesDir(), curUser.getCORPUS_FILE()).getPath());
-                                }
-                                catch (IOException e) {
-                                    Log.i("ERROR", "Ошибка при загрузке данных");
-                                }
-                                boolean parametersAccuracy = sc.classify(dataNoBitmap);
-                                if ((accuracy > 0.60) & parametersAccuracy){
+                            case "4-Layer Perceptron Network":
+                                double[] dataForTest = getDataForNetwork(signature, analyzer, getContext());
+                                data = FormatParamsForPerceptronNetwork();
+                                double res = network.test(dataForTest);
+
+                                if (res > 0.5)
                                     decision = "true";
-                                }
-                                else decision = "false";
-
-                                //if (dd.Compare(signature, getContext()) > 0.75) decision = "true";
-                                //else decision="false";
-                                break;
-
+                                else
+                                    decision = "false";
                         }
 
                         //show a dialog window that asks whether the decision was correct
                         FragmentManager manager = getFragmentManager();
-                        ResultFragment dialog = ResultFragment.newInstance(curUser.getUserName(), decision, data);
+                        ResultFragment dialog = ResultFragment.newInstance(curUser.getUserName(), decision, data, MODE);
                         dialog.show(manager, "RESULT");
 
                         ResetFragment();
@@ -256,27 +281,16 @@ public class DrawControlFragment extends Fragment {
         return dataForTest;
     }
 
-    public String FormatSignatureParamsWithoutBitmap (Signature sign){
-        String dataForTest = "";
-        dataForTest = dataForTest + String.valueOf(sign.getTouches()) + "," + String.valueOf(sign.getMinTimeOnTouch()) + "," + String.valueOf(sign.getMaxTimeOnTouch()) + ","+ String.valueOf(sign.getAverageTimeOnTouch()) + "," + String.valueOf(sign.getTotalTimeOnTouch());
-
-        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxSpeed())  + "," + String.valueOf(sign.getMinSpeedNotNull());
-        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxVelocityProjectionX())  + "," + String.valueOf(sign.getMinVelocityProjectionX());
-        dataForTest = dataForTest + "," + String.valueOf(sign.getMaxVelocityProjectionY())  + "," + String.valueOf(sign.getMinVelocityProjectionY());
-
-        Log.i("DATA_SET: ", dataForTest);
-        return dataForTest;
-    }
-
 
     private void GetExamples()
     {
         String data = FormatSignatureParams(signature);//getData
-
+        String dataForPerceptronNetwork = FormatExampleParamsForPerceptronNetwork();
 
        // if (exampleRemain%2==0)
        // {
             SignatureUtils.WriteFile(data + ",true", getContext(), curUser.getCORPUS_FILE()); //write data in User_Corpus_File and mark it true
+            SignatureUtils.WriteFile(dataForPerceptronNetwork + "1.0", getContext(), curUser.getCORPUS_2_FILE());
        // }
        // else
         //{
@@ -293,7 +307,7 @@ public class DrawControlFragment extends Fragment {
         {
             /*if (exampleRemain%2==0)
             {*/
-                Toast.makeText(getContext(), "Now write true signature\n" + String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), String.valueOf(exampleRemain) + " examples remain", Toast.LENGTH_SHORT).show();
             /*}
             else
             {
@@ -305,68 +319,52 @@ public class DrawControlFragment extends Fragment {
     }
 
 
-
-    private String KNN_5_MODE(String data, Context context)
+    private double[] getDataForNetwork(Signature signature, SignatureVectorAnalyzer analyzer, Context context)
     {
-        String decision = "";
-        try
+        double[] result = new double[12];
+
+        double accuracy = analyzer.Compare(signature, context);
+        result[0] = accuracy;
+        result[1] = (double)signature.getTouches() / 10;
+        result[2] = (double)signature.getMinTimeOnTouch() / 1000;
+        result[3] = (double)signature.getMaxTimeOnTouch() / 1000;
+        result[4] = (double)signature.getAverageTimeOnTouch() / 1000;
+        result[5] = (double)signature.getTotalTimeOnTouch() / 1000;
+        result[6] = signature.getMinSpeedNotNull();
+        result[7] = signature.getMaxSpeed();
+        result[8] = signature.getMinVelocityProjectionX();
+        result[9] = signature.getMaxVelocityProjectionX();
+        result[10] = signature.getMinVelocityProjectionY();
+        result[11] = signature.getMaxVelocityProjectionY();
+
+        return result;
+    }
+
+    private String FormatExampleParamsForPerceptronNetwork()
+    {
+        String result = "";
+        double[] params = getDataForNetwork(signature, analyzer, getContext());
+
+        result += "1.0,";
+
+        for (int i=1; i < params.length; i++)
         {
-            File corpus = new File(getContext().getFilesDir() , curUser.getCORPUS_FILE());
-            int size = SignatureUtils.ReadFile(curUser.getCORPUS_FILE(), getContext()).get(0).split(",").length - 1;
-            Dataset dataset = FileHandler.loadDataset(corpus, size , ",");
-
-            Classifier classifier = new KNearestNeighbors(5);
-            classifier.buildClassifier(dataset);
-
-            SignatureUtils.WriteFile(data, getContext(), "temporary.txt");
-            File forClassification = new File(getContext().getFilesDir() , "temporary.txt");
-            Dataset dataForClassification = FileHandler.loadDataset(forClassification, size-1 , ",");
-            for (Instance inst : dataForClassification)
-            {
-                Object result = classifier.classify(inst);
-                decision = result.toString();
-                Log.i("DECISION: ", decision);
-            }
-            SignatureUtils.deleteFile(getContext(), "temporary.txt");
-            return decision;
-
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            SignatureUtils.deleteFile(getContext(), "temporary.txt");
-            return "";
+            result += String.valueOf(params[i]) + ",";
         }
+        return  result;
     }
 
 
-    private String RangeClassifierMode(String data, Context context){
-         try
-         {
-             File corpus = new File(context.getFilesDir() , curUser.getCORPUS_FILE());
+    private String FormatParamsForPerceptronNetwork()
+    {
+        String result = "";
+        double[] params = getDataForNetwork(signature, analyzer, getContext());
 
-             RangeClassifier classifier = new RangeClassifier();
-             classifier.loadData(corpus.getPath());
-
-             String line = data;
-             String[] stringTemp = line.split(",");
-             double[] doubleTemp = new double[stringTemp.length - 1];
-
-             for (int iter = 0; iter < stringTemp.length - 1; iter++) {
-                 doubleTemp[iter] = Double.parseDouble(stringTemp[iter]);
-             }
-
-             String decision = classifier.classify(doubleTemp);
-             Log.i("DECISION: ", decision);
-
-             return decision;
-
-         } catch (Exception e)
-         {
-             e.printStackTrace();
-             return "";
-         }
-
+        for (int i=0; i < params.length; i++)
+        {
+            result += String.valueOf(params[i]) + ",";
+        }
+        return  result;
     }
-
 
 }

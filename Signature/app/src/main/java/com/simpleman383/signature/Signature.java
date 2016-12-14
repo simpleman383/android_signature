@@ -225,9 +225,14 @@ public class Signature {
                     double velocityProjectionX = path_projectionX / time_interval;
                     double velocityProjectionY = path_projectionY / time_interval;
 
-                    velocityProjectionsX.add(velocityProjectionX);
-                    velocityProjectionsY.add(velocityProjectionY);
-                    speedModule.add(speed);
+                    if (velocityProjectionX == velocityProjectionX)
+                        velocityProjectionsX.add(velocityProjectionX);
+
+                    if (velocityProjectionY == velocityProjectionY)
+                        velocityProjectionsY.add(velocityProjectionY);
+
+                    if (speed == speed)
+                        speedModule.add(speed);
                 }
             }
 
@@ -253,7 +258,7 @@ public class Signature {
         if (velocityProjectionsY.isEmpty() || velocityProjectionsY == null) {
             minVelocityProjectionY = 0;
         } else {
-            minSpeedNotNull = velocityProjectionsY.get(0);
+            minVelocityProjectionY = velocityProjectionsY.get(0);
         }
 
 

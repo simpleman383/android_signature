@@ -34,20 +34,17 @@ public class RangeClassifier {
         this.splitDataToClasses();
         this.calculateMinsForFirstClass();
         this.calculateMaxsForFirstClass();
-        this.calculateMinsForSecondClass();
-        this.calculateMaxsForSecondClass();
-        Container objToClassify = new Container(params);
         int correctCounter = 0;
-        for (int i = params.length - 9; i <= params.length - 1 ; i++){
+        for (int i = params.length - 11; i <= params.length - 1 ; i++){
             if ((params[i] >= this.minsOfFirstClass.get(i)) && (params[i] <= this.maxsOfFirstClass.get(i))){
                 correctCounter++;
             }
         }
         Double percentage = (double)correctCounter / 10;
         if (percentage.compareTo(CONST_PERCENTAGE) > 0) {
-            return dataOfFirstClass.get(0).classValue;
+            return "true";
         }
-        else return dataOfSecondClass.get(0).classValue;
+        else return "false";
     }
 
 
@@ -65,7 +62,7 @@ public class RangeClassifier {
     }
 
 
-    private void calculateMinsForSecondClass() {
+    /*private void calculateMinsForSecondClass() {
         double min;
         for (int i = 0; i < data.get(0).parameters.length; i++) {
             min = dataOfSecondClass.get(0).parameters[i];
@@ -74,7 +71,7 @@ public class RangeClassifier {
             }
             minsOfSecondClass.add(min);
         }
-    }
+    }*/
 
 
     private void calculateMaxsForFirstClass() {
@@ -89,7 +86,7 @@ public class RangeClassifier {
     }
 
 
-    private void calculateMaxsForSecondClass() {
+    /*private void calculateMaxsForSecondClass() {
         double max;
         for (int i = 0; i < data.get(0).parameters.length; i++) {
             max = dataOfSecondClass.get(0).parameters[i];
@@ -98,7 +95,7 @@ public class RangeClassifier {
             }
             maxsOfSecondClass.add(max);
         }
-    }
+    }*/
 
 
     public void loadData(String path) throws IOException {

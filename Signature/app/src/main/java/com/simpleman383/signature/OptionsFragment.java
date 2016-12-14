@@ -140,6 +140,9 @@ public class OptionsFragment extends Fragment {
                     SignatureUtils.WriteFile(newUserName, getContext(), USER_LIST_FILE);
                     createEmptyFile(getContext(), newUserName + "_CORPUS.txt");
                     createEmptyFile(getContext(), newUserName + "_SIGNATURE_VECTOR_CHARS.txt");
+                    createEmptyFile(getContext(), newUserName + "_CORPUS_2.txt");
+                    createEmptyFile(getContext(), newUserName + "_PERCEPTRON_WEIGHTS.txt");
+
                     updateSpinner();
                 }
                 else
@@ -186,6 +189,8 @@ public class OptionsFragment extends Fragment {
                     SignatureUtils.deleteUserFromList(currentUserName, getContext());
                     SignatureUtils.deleteFile(getContext(), currentUserName+"_CORPUS.txt");
                     SignatureUtils.deleteFile(getContext(), currentUserName+ "_SIGNATURE_VECTOR_CHARS.txt");
+                    SignatureUtils.deleteFile(getContext(), currentUserName + "_PERCEPTRON_WEIGHTS.txt");
+                    SignatureUtils.deleteFile(getContext(), currentUserName+"_CORPUS_2.txt");
                     updateSpinner();
                 }
                 else

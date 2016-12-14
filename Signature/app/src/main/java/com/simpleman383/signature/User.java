@@ -18,14 +18,23 @@ import java.util.List;
 public class User
 {
     private String mUserName;
+
     private String CORPUS_FILE;
     private String SIGNATURE_VECTOR_CHARS;
+    private String PERCEPTRON_WEIGHTS;
+    private String CORPUS_2_FILE;
+
     private int SampleCounter;
 
     public User(String name, Context context){
         mUserName = name;
         CORPUS_FILE = name + "_CORPUS.txt";
         SIGNATURE_VECTOR_CHARS = name + "_SIGNATURE_VECTOR_CHARS.txt";
+
+        CORPUS_2_FILE = name + "_CORPUS_2.txt";
+        PERCEPTRON_WEIGHTS = name + "_PERCEPTRON_WEIGHTS.txt";
+
+
         SampleCounter = countSampleAmount(context);
     }
 
@@ -40,7 +49,6 @@ public class User
     public String getCORPUS_FILE() {
         return CORPUS_FILE;
     }
-
 
     public int getSampleCounter(){
         return SampleCounter;
@@ -73,6 +81,15 @@ public class User
 
     public String getSIGNATURE_VECTOR_CHARS() {
         return SIGNATURE_VECTOR_CHARS;
+    }
+
+
+    public String getPERCEPTRON_WEIGHTS() {
+        return PERCEPTRON_WEIGHTS;
+    }
+
+    public String getCORPUS_2_FILE() {
+        return CORPUS_2_FILE;
     }
 }
 

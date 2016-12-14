@@ -3,6 +3,6 @@
     <string-array name="classifiers">
         <item>KNN-5</item>
         <item>Range Classifier</item>
-        <item>Shoomba-Boomba!</item>
+        <item>4-Layer Perceptron Network</item>
     </string-array>
 </resources>
